@@ -1,7 +1,238 @@
 import { ID, Query } from "appwrite";
 
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
-import { IUpdatePost, INewPost, INewUser, IUpdateUser } from "@/types";
+import { IUpdatePost, INewPost, INewUser, IUpdateUser, IUser, Event, CalendarEvent } from "@/types";
+
+
+
+// ============================================================
+// CALENDAR EVETNS
+// ============================================================
+// ============================== CREATE EVENT 6569536c4a9034546766
+export async function createEvent(newEvent: Event): Promise<CalendarEvent> {
+  try {
+    const response: any = await databases.createDocument(
+      appwriteConfig.databaseId,
+      '6569536c4a9034546766', // Replace with your actual events collection ID
+      ID.unique(), // Provide a unique document ID
+      {
+        title: newEvent.title,
+        start: newEvent.start.toISOString(),
+        end: newEvent.end.toISOString(),
+      }
+    );
+
+    if (!response || !response.$id) {
+      throw new Error('Failed to create event.');
+    }
+
+    // Return the created event with the new ID
+    return {
+      id: response.$id,
+      title: newEvent.title,
+      start: newEvent.start,
+      end: newEvent.end,
+    };
+  } catch (error) {
+    console.error('Error creating event:', error);
+    throw error;
+  }
+}
+
+
+
+// ============================== GET ALL EVENTS
+export async function getAllEvents() {
+  try {
+    const events = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      '6569536c4a9034546766', // Replace with your actual events collection ID
+      [Query.orderDesc('$createdAt')]
+    );
+
+    if (!events || !events.documents) {
+      throw new Error('Failed to retrieve events.');
+    }
+
+    return events.documents;
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    throw error;
+  }
+}
+
+export async function updateEventInDatabase(updatedEvent: CalendarEvent) {
+  try {
+    // Use the event ID as the unique identifier to update the document
+    await databases.updateDocument(
+      appwriteConfig.databaseId,
+      '6569536c4a9034546766', // Replace with your actual events collection ID
+      updatedEvent.id, // Use the ID or unique identifier of the event to update
+      updatedEvent
+    );
+  } catch (error) {
+    console.error('Error updating event in database:', error);
+    throw error;
+  }
+}
+
+
+// ============================================================
+// ADMIN
+// ============================================================
+// ============================== DISPLAY USERS
+export async function getAllUsers(limit?: number) {
+  const queries: any[] = [Query.orderDesc("$createdAt")];
+
+  if (limit) {
+    queries.push(Query.limit(limit));
+  }
+
+  try {
+    const users = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      queries
+    );
+
+    if (!users) throw Error;
+
+    return users;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== UPDATE USER DETAILS
+export async function updateUserDetails(user: IUpdateUser) {
+  try {
+    const hasFileToUpdate = user.file.length > 0;
+    let image = {
+      imageUrl: user.imageUrl,
+      imageId: user.imageId,
+    };
+
+    if (hasFileToUpdate) {
+      // Upload new file to appwrite storage
+      const uploadedFile = await uploadFile(user.file[0]);
+      if (!uploadedFile) throw Error;
+
+      // Get new file url
+      const fileUrl = getFilePreview(uploadedFile.$id);
+      if (!fileUrl) {
+        await deleteFile(uploadedFile.$id);
+        throw Error;
+      }
+
+      image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
+    }
+
+    // Update user details
+    const updatedUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      user.userId,
+      {
+        name: user.name,
+        bio: user.bio,
+        imageUrl: image.imageUrl,
+        imageId: image.imageId,
+        email: user.email,
+        role: user.role,
+      }
+    );
+
+    // Failed to update
+    if (!updatedUser) {
+      // Delete new file that has been recently uploaded
+      if (hasFileToUpdate) {
+        await deleteFile(image.imageId);
+      }
+      // If no new file uploaded, just throw error
+      throw Error;
+    }
+
+    // Safely delete old file after successful update
+    if (user.imageId && hasFileToUpdate) {
+      await deleteFile(user.imageId);
+    }
+
+    return updatedUser;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== DELETE USER
+export async function deleteUserById(userId: string) {
+  try {
+    // Ensure userId is not empty
+    if (!userId) {
+      throw new Error("Invalid userId");
+    }
+
+    // Get user's saved posts
+    const savedPosts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.savesCollectionId,
+      [Query.equal("user", userId)]
+    );
+
+    // Delete user's saved posts
+    for (const savedPost of savedPosts.documents) {
+      await deleteSavedPost(savedPost.$id);
+    }
+
+    // Get user's posts
+    const userPosts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [Query.equal("creator", userId)]
+    );
+
+    // Delete user's posts
+    for (const userPost of userPosts.documents) {
+      await deletePost(userPost.$id, userPost.imageId);
+    }
+
+    // Delete user
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId
+    );
+
+    if (!statusCode) {
+      throw new Error("Failed to delete user");
+    }
+
+    return { status: "Ok" };
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw { error: 'Delete user failed', details: error }; // Return a consistent error response
+  }
+}
+
+// Fetch all events from the database
+// export async function getAllEvents() {
+//   try {
+//     const events = await databases.listDocuments(
+//       appwriteConfig.databaseId,
+//       'eventsCollectionId', // Replace with your actual events collection ID
+//       [Query.orderDesc('$createdAt')]
+//     );
+
+//     if (!events || !events.documents) {
+//       throw new Error('Failed to retrieve events.');
+//     }
+
+//     return events.documents;
+//   } catch (error) {
+//     console.error('Error fetching events:', error);
+//     throw error; // Rethrow the error to let the calling code handle it
+//   }
+// }
+
 
 // ============================================================
 // AUTH
@@ -27,6 +258,7 @@ export async function createUserAccount(user: INewUser) {
       email: newAccount.email,
       username: user.username,
       imageUrl: avatarUrl,
+      role: user.role,
     });
 
     return newUser;
@@ -43,6 +275,7 @@ export async function saveUserToDB(user: {
   name: string;
   imageUrl: URL;
   username?: string;
+  role: string,
 }) {
   try {
     const newUser = await databases.createDocument(
@@ -544,3 +777,7 @@ export async function updateUser(user: IUpdateUser) {
     console.log(error);
   }
 }
+
+export type { IUser };
+export type { Event };
+export type { CalendarEvent };

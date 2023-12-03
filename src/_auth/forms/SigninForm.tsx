@@ -18,6 +18,7 @@ import Loader from "@/components/shared/Loader"
 import { Link, useNavigate } from "react-router-dom"
 import {  useSignInAccount } from "@/lib/react-query/queriesAndMutations"
 import { useUserContext } from "@/context/AuthContext"
+import { getCurrentUser } from "@/lib/appwrite/api"
 
 
 
@@ -53,16 +54,24 @@ const SigninForm = () => {
       return;
     }
     const isLoggedIn = await checkAuthUser();
+  
     if (isLoggedIn) {
+      const user = await getCurrentUser();
+      
+      // Check user role
+      if (user && user.role === 'user') {
+        // Navigate to admin dashboard
+        navigate("/");
+      } else if (user && user.role === 'admin'){
+        // Navigate to regular user dashboard
+        navigate("/admin/*");
+      }
       form.reset();
-
-      navigate("/");
     } else {
       toast({ title: "Login failed. Please try again.", });
-      
-      return;
     }
-  } 
+  }
+
 
   return (
       <Form {...form}>
@@ -78,7 +87,7 @@ const SigninForm = () => {
         
 
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5 w-full mt-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5 w-full mt-4">
           <FormField
             control={form.control}
             name="email"
@@ -86,26 +95,28 @@ const SigninForm = () => {
               <FormItem>
                 <FormLabel className="shad-form_label">Email</FormLabel>
                 <FormControl>
-                  <Input type="text" className="shad-input" {...field} />
+                  <Input type="text" className="shad-input" {...field} autoComplete="email" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <FormField
+
+            <FormField
             control={form.control}
             name="password"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="shad-form_label">Password</FormLabel>
                 <FormControl>
-                  <Input type="password" className="shad-input" {...field} />
+                  <Input type="password" className="shad-input" {...field} autoComplete="current-paswword" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
         <Button type="submit" className="shad-button_primary">
           {isUserLoading ? (
             <div className="flex-center gap-2">
@@ -129,4 +140,4 @@ const SigninForm = () => {
   )
 }
 
-export default SigninForm
+export default SigninForm 

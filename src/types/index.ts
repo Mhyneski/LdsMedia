@@ -1,3 +1,5 @@
+import { type } from "os";
+
 export type IContextType = {
   user: IUser;
   isLoading: boolean;
@@ -20,6 +22,8 @@ export type IUpdateUser = {
   imageId: string;
   imageUrl: URL | string;
   file: File[];
+  email: string;
+  role: string;
 };
 
 export type INewPost = {
@@ -47,6 +51,7 @@ export type IUser = {
   email: string;
   imageUrl: string;
   bio: string;
+  role: string;
 };
 
 export type INewUser = {
@@ -54,4 +59,21 @@ export type INewUser = {
   email: string;
   username: string;
   password: string;
+  role: string;
+};
+
+//Create New Event
+export interface Event {
+  title: string;
+  start: Date;
+  end: Date;
+};
+
+//View Calendar Event
+export type CalendarEvent = {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  // Other properties specific to your calendar events
 };

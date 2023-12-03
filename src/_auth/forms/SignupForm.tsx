@@ -40,39 +40,51 @@ const SignupForm = () => {
       username: "",
       email: "",
       password: "",
+      role: "user",
     },
   })
  
   // 2. Define a submit handler.
- async function onSubmit(values: z.infer<typeof SignupValidation>) {
-    const newUser = await createUserAccount(values)
-
-    if (!newUser){
-      return toast({
-        title: 'Sign up Failed. Please try again.'
-      })
+  async function onSubmit(values: z.infer<typeof SignupValidation>) {
+    try {
+      const newUser = await createUserAccount(values);
+  
+      if (!newUser) {
+        console.error("User creation failed:", newUser);
+        return toast({
+          title: 'Sign up Failed. Please try again.'
+        });
+      }
+  
+      // Sign in the user immediately after creating the account
+      const session = await signInAccount({
+        email: values.email,
+        password: values.password,
+      });
+  
+      if (!session) {
+        console.error("Sign-in after user creation failed:", session);
+        toast({ title: "Something went wrong. Please log in with your new account." });
+        return;
+      }
+  
+      // Check if the user is authenticated after signing in
+      const isLoggedIn = await checkAuthUser();
+  
+      if (isLoggedIn) {
+        form.reset();
+        navigate("/");
+      } else {
+        console.error("Login after user creation failed. User not logged in:", isLoggedIn);
+        toast({ title: "Login failed. Please try again." });
+      }
+    } catch (error) {
+      console.error("An error occurred during signup or login:", error);
+      toast({ title: "An error occurred. Please try again later." });
     }
-    const session = await signInAccount({
-     email: values.email,
-      password: values.password,
-    });
-
-    if (!session) {
-      toast({ title: "Something went wrong. Please login your new account", });
-      
-      return;
-    }
-    const isLoggedIn = await checkAuthUser();
-    if (isLoggedIn) {
-      form.reset();
-
-      navigate("/");
-    } else {
-      toast({ title: "Login failed. Please try again.", });
-      
-      return;
-    }
-  } 
+  }
+  
+  
 
   return (
       <Form {...form}>

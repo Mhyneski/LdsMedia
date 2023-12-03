@@ -22,6 +22,7 @@
     "git": "^0.1.5",
     "lucide-react": "^0.292.0",
     "react": "^18.2.0",
+    "react-big-calendar": "^1.8.5",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.48.2",
