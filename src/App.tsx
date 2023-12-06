@@ -7,13 +7,11 @@ import Dashboard from '@/_admin/Dashboard';
 import Sidebar from '@/_admin/Sidebar';
 import Users from '@/_admin/Users';
 import Calendar from '@/_admin/Calendar';
-import { AllUsers, CreatePost, EditPost, Explore, Home, PostDetails, Profile, Saved, UpdateProfile } from './_root/pages';
+import { AllUsers, CreatePost, EditPost, Explore, Home, PostDetails, Profile, Saved, UpdateProfile, UserList, EventPage,} from './_root/pages';
 import SignupForm from '@/_auth/forms/SignupForm';
 import AuthLayout from './_auth/AuthLayout';
 import RootLayout from './_root/RootLayout';
 import { Toaster } from "@/components/ui/toaster"
-
-
 
 
 const App = () => {
@@ -37,6 +35,10 @@ const App = () => {
           <Route path="/posts/:id" element={<PostDetails />} />
           <Route path="/profile/:id/*" element={<Profile />} />
           <Route path="/update-profile/:id" element={<UpdateProfile />} />
+          <Route path="/userlist" 
+          element={<UserList onSelectUser={(userId) => { console.log(userId); /* your other implementation here */ }} />}
+          />
+          <Route path="/eventpage" element={<EventPage/>} />
           
      </Route>
      <Route

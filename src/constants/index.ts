@@ -5,6 +5,16 @@ export const sidebarLinks = [
     label: "Home",
   },
   {
+    imgURL: "/assets/icons/messenger.svg",
+    route: "/userlist",
+    label: "Messenger",
+  },
+  {
+    imgURL: "/assets/icons/calendar.svg",
+    route: "/eventpage",
+    label: "Events",
+  },
+  {
     imgURL: "/assets/icons/wallpaper.svg",
     route: "/explore",
     label: "Explore",
