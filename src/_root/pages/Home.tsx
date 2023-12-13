@@ -60,8 +60,8 @@ const Home = () => {
           <Loader />
         ) : (
           <ul className="grid 2xl:grid-cols-2 gap-6">
-            {creators?.documents.map((creator) => (
-              <li key={creator?.$id}>
+            {creators?.map((creator) => (
+              <li key={creator.id} className="flex-1 min-w-[200px] w-full">
                 <UserCard user={creator} />
               </li>
             ))}

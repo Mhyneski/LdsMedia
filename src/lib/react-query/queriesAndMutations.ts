@@ -151,9 +151,9 @@ export const useDeletePost = () => {
 };
 
 export const useGetUsers = (limit?: number) => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.GET_USERS],
-    queryFn: () => getUsers(limit),
+  return useQuery<any[], Error>({
+    queryKey: [QUERY_KEYS.GET_USERS], // Adjust as per your requirements
+    queryFn: () => getUsers(limit).then(result => result.documents),
   });
 };
 

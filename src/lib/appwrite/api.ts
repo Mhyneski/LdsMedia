@@ -829,6 +829,7 @@ export async function getRecentPosts() {
 // ============================================================
 
 // ============================== GET USERS
+// api.ts
 export async function getUsers(limit?: number) {
   const queries: any[] = [Query.orderDesc("$createdAt")];
 
@@ -848,15 +849,20 @@ export async function getUsers(limit?: number) {
       throw new Error("Failed to fetch user data");
     }
 
-    return users;
+    // Ensure that users is an array before accessing the documents property
+    const userList = Array.isArray(users) ? users : [];
+
+    // Use type assertion to tell TypeScript that userList has a 'documents' property
+    return userList as { documents: any[] };
   } catch (error) {
     // Log the error for debugging purposes
     console.error("Error fetching users:", error);
 
     // Return a default value or an empty array to prevent undefined
-    return [];
+    return { documents: [] };
   }
 }
+
 
 
 // ============================== GET USER BY ID

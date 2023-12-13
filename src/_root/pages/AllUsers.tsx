@@ -1,3 +1,4 @@
+// AllUsers.tsx
 import Loader from "@/components/shared/Loader";
 import UserCard from "@/components/shared/UserCard";
 import { useToast } from "@/components/ui/use-toast";
@@ -10,8 +11,7 @@ const AllUsers = () => {
 
   if (isErrorCreators) {
     toast({ title: "Something went wrong." });
-    
-    return;
+    return null; // or handle the error appropriately
   }
 
   return (
@@ -22,8 +22,8 @@ const AllUsers = () => {
           <Loader />
         ) : (
           <ul className="user-grid">
-            {creators?.documents.map((creator) => (
-              <li key={creator?.$id} className="flex-1 min-w-[200px] w-full  ">
+            {creators?.map((creator) => (
+              <li key={creator.id} className="flex-1 min-w-[200px] w-full">
                 <UserCard user={creator} />
               </li>
             ))}
