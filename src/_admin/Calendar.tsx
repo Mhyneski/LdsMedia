@@ -129,9 +129,6 @@ const CustomCalendar: React.FC = () => {
     setUpdateFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const openNewEventModal = () => {
-    setShowNewEventModal(true);
-  };
 
   const closeNewEventModal = () => {
     setShowNewEventModal(false);
