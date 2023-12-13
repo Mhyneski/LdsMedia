@@ -1,5 +1,3 @@
-import { type } from "os";
-
 export type IContextType = {
   user: IUser;
   isLoading: boolean;
