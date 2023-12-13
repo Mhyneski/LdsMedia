@@ -910,6 +910,8 @@ export async function updateUser(user: IUpdateUser) {
         bio: user.bio,
         imageUrl: image.imageUrl,
         imageId: image.imageId,
+        email: user.email,
+        role: user.role,
       }
     );
 

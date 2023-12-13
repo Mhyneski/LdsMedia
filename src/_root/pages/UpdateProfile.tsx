@@ -61,6 +61,8 @@ const UpdateProfile = () => {
       file: value.file,
       imageUrl: currentUser.imageUrl,
       imageId: currentUser.imageId,
+      email: user.email,
+      role: user.role,
     });
 
     if (!updatedUser) {
