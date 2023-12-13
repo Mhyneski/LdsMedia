@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { deleteUserById, getAllUsers, IUser, updateUserDetails } from "@/lib/appwrite/api"; 
-import { useUserContext } from "@/context/AuthContext";
 
 const Users: React.FC = () => {
     const [users, setUsers] = useState<IUser[]>([]);
-    const { user } = useUserContext();
     const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);

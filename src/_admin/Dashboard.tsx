@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { getAllUsers } from "@/lib/appwrite/api";
 import { getAllEvents } from "@/lib/appwrite/api";
-import { useUserContext } from "@/context/AuthContext";
 
 const Dashboard: React.FC = () => {
   const [userCount, setUserCount] = useState<number>(0);
   const [eventCount, setEventCount] = useState<number>(0);
-  const { user } = useUserContext();
   const [userCountLoading, setUserCountLoading] = useState(true);
   const [eventCountLoading, setEventCountLoading] = useState(true);
 
