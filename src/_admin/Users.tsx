@@ -7,12 +7,14 @@ const Users: React.FC = () => {
     const { user } = useUserContext();
     const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+
 
     useEffect(() => {
       const fetchUsers = async () => {
         try {
+          setLoading(true);
           const response = await getAllUsers();
-          // Map Document objects to IUser format
           const mappedUsers = response?.documents.map((document) => ({
             id: document.$id,
             name: document.name,
@@ -25,6 +27,8 @@ const Users: React.FC = () => {
           setUsers(mappedUsers);
         } catch (error) {
           console.error('Error fetching users:', error);
+        } finally {
+          setLoading(false);
         }
       };
   
@@ -32,7 +36,6 @@ const Users: React.FC = () => {
     }, []);
     
     const handleEditUser = (userId: string) => {
-        // Find the selected user for editing
         const userToEdit = users.find((user) => user.id === userId);
         if (userToEdit) {
           setSelectedUser(userToEdit);
@@ -47,18 +50,16 @@ const Users: React.FC = () => {
             userId: editedUser.id,
             name: editedUser.name,
             bio: editedUser.bio,
-            imageId: editedUser.imageUrl, // Assuming imageUrl is the imageId here
+            imageId: editedUser.imageUrl,
             imageUrl: editedUser.imageUrl,
-            file: [], // You can pass the new file for profile picture update if needed
+            file: [],
             email: editedUser.email,
             role: editedUser.role,
           });
     
           console.log('User details updated:', updatedUser);
-          // Close the edit modal
           setIsEditModalOpen(false);
     
-          // Optionally, update the local state with the updated user details
           setUsers((prevUsers) =>
             prevUsers.map((user) =>
               user.id === editedUser.id ? { ...user, ...editedUser } : user
@@ -71,22 +72,21 @@ const Users: React.FC = () => {
 
     const handleDeleteUser = async (userId: string) => {
         try {
-          // Call the API to delete the user by ID
           const deleteStatus = await deleteUserById(userId);
     
           console.log(`User with ID ${userId} deleted. Status:`, deleteStatus);
     
-          // Optionally, update the local state by removing the deleted user
           setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
         } catch (error) {
           console.error('Error deleting user:', error);
-          // Handle the error or log it as needed
         }
       };
       
     return (
     <div className="container mx-auto my-8 overflow-x-auto">
-      <h2 className="text-3xl font-semibold mb-4 text-white">All Users</h2>
+      {loading ? (
+        <div className='text-3xl text-center justify-center'>Loading...</div>
+      ) : (
       <table className="min-w-full bg-white border border-gray-800 shadow-md">
         <thead>
           <tr className="bg-gray-400">
@@ -94,7 +94,6 @@ const Users: React.FC = () => {
             <th className="py-3 px-4 border-b text-left text-sm font-medium text-black">Email</th>
             <th className="py-3 px-4 border-b text-left text-sm font-medium text-black">Role</th>
             <th className="py-3 px-7 border-b text-left text-sm font-medium text-black">Action</th>
-            {/* Add other table headers for user information */}
           </tr>
         </thead>
         <tbody>
@@ -121,50 +120,39 @@ const Users: React.FC = () => {
           ))}
         </tbody>
       </table>
-      {/* Edit User Modal */}
+      )}
       {isEditModalOpen && selectedUser && (
         <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-75 flex items-center justify-center">
-          <div className="bg-white p-8 rounded shadow-md">
-            <h3 className="text-lg font-semibold mb-4 text-black mx-w ">Edit User</h3>
+          <div className="bg-white p-8 rounded shadow-md w-96">
+            <h3 className="text-lg font-semibold mb-4 text-black">Edit User</h3>
             <form>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Name</label>
-                <input
-                  type="text"
-                  value={selectedUser.name}
-                  onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
-                  className="mt-1 p-2 border rounded w-full text-black"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <input
-                  type="text"
-                  value={selectedUser.email}
-                  onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
-                  className="mt-1 p-2 border rounded w-full text-black"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Role</label>
-                <input
-                  type="text"
-                  value={selectedUser.role}
-                  onChange={(e) => setSelectedUser({ ...selectedUser, role: e.target.value })}
-                  className="mt-1 p-2 border rounded w-full text-black"
-                />
-              </div>
-              {/* You can add more fields as needed, such as uploading a new profile picture */}
+              {['name', 'email', 'role'].map((field) => (
+                <div key={field} className="mb-4">
+                  <label htmlFor={field} className="block text-sm font-medium text-gray-700">
+                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <input
+                    type="text"
+                    id={field}
+                    value={(selectedUser as any)[field]} // Type assertion here
+                    onChange={(e) => {
+                      const updatedUser = { ...selectedUser, [field]: e.target.value };
+                      setSelectedUser(updatedUser);
+                    }}
+                    className="mt-1 p-2 border rounded w-full text-black"
+                  />
+                </div>
+              ))}
             </form>
             <div className="flex mt-4">
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
                 onClick={() => handleSaveEdit(selectedUser)}
               >
                 Save
               </button>
               <button
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-2"
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
                 onClick={() => setIsEditModalOpen(false)}
               >
                 Cancel

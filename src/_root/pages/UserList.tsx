@@ -1,16 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { getAllUsers, IUser } from '@/lib/appwrite/api';
+// UserList.tsx
+import React, { useState, useEffect } from 'react';
+import { IUser, getAllUsers1 } from '@/lib/appwrite/api';
 
-const UserList: React.FC<{ onSelectUser: (userId: string) => void }> = ({ onSelectUser }) => {
+interface UserListProps {
+  onUserClick: (userId: string) => void;
+}
+
+const UserList: React.FC<UserListProps> = React.memo(({ onUserClick }) => {
   const [users, setUsers] = useState<IUser[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    async function fetchUsers() {
       try {
-        const userList = await getAllUsers();
+        setLoading(true);
+        const userList = await getAllUsers1();
 
-        if (userList) {
-          const transformedUsers = userList.documents
+        console.log('User list response:', userList);
+
+        if (userList && 'documents' in userList) {
+          const transformedUsers = (userList.documents as any[])
             .filter((user) => user.role !== 'admin')
             .map((document) => ({
               id: document.$id,
@@ -18,7 +28,6 @@ const UserList: React.FC<{ onSelectUser: (userId: string) => void }> = ({ onSele
               username: document.username,
               email: document.email,
               imageUrl: document.imageUrl,
-              bio: document.bio,
             })) as IUser[];
 
           setUsers(transformedUsers);
@@ -27,37 +36,45 @@ const UserList: React.FC<{ onSelectUser: (userId: string) => void }> = ({ onSele
         }
       } catch (error) {
         console.error('Error fetching users:', error);
+      } finally{
+        setLoading(false);
       }
-    };
+    }
 
     fetchUsers();
   }, []);
 
+  const handleUserClick = (userId: string) => {
+    setSelectedUserId(userId);
+    onUserClick(userId);
+  };
+
   return (
-    <div className="max-w-md mt-8 p-4 bg-black shadow-md rounded-md overflow-y-auto max-h-150">
-      <ul>
-        {users.map((user) => (
-          <li
-            key={user.id}
-            className="flex items-center justify-between p-2 mb-2 bg-gray-100 rounded-md cursor-pointer hover:bg-gray-200 text-black"
-            onClick={() => onSelectUser(user.id)}
-          >
-            <div className="flex items-center">
-              <img
-                src={user.imageUrl}
-                alt={user.name}
-                className="w-8 h-8 rounded-full object-cover mr-2"
-              />
-              <div>
-                <p className="text-sm font-semibold">{user.name}</p>
-                <p className="text-xs text-gray-500">{user.email}</p>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
+    <div className="p-4 bg-gray-900 text-white overflow-y-auto" style={{ maxHeight: '700px' }}>
+  <ul>
+    {loading && <p>Loading users...</p>}
+    {!loading &&
+      users.map((user) => (
+        <li
+          key={user.id}
+          onClick={() => handleUserClick(user.id)}
+          className={`flex items-center cursor-pointer ${user.id === selectedUserId ? 'bg-gray-700' : 'bg-gray-800'} p-2 rounded mb-2`}
+        >
+          {user.imageUrl && (
+            <img
+              src={user.imageUrl}
+              alt={user.name}
+              className="w-8 h-8 rounded-full mr-2"
+            />
+          )}
+          <span className="flex-shrink-0">{user.name}</span>
+        </li>
+      ))}
+  </ul>
+</div>
+
+    );
+  });
+
 
 export default UserList;

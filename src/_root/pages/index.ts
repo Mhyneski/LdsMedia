@@ -8,5 +8,5 @@ export { default as EditPost } from "./EditPost";
 export { default as PostDetails } from "./PostDetails";
 export { default as LikedPosts } from "./LikedPosts";
 export { default as AllUsers } from "./AllUsers";
-export { default as UserList } from "./UserList";
 export { default as EventPage } from "./EventPage";
+export { default as Messenger } from "./Messenger";

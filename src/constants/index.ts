@@ -6,7 +6,7 @@ export const sidebarLinks = [
   },
   {
     imgURL: "/assets/icons/messenger.svg",
-    route: "/userlist",
+    route: "/messenger",
     label: "Messenger",
   },
   {

@@ -179,8 +179,11 @@ export const useGetPosts = () => {
       const lastId = lastPage.documents[lastPage.documents.length - 1].$id;
       return lastId;
     },
+    // Add the missing property initialPageParam
+    initialPageParam: null, // You can set it to an appropriate initial value if needed
   });
 };
+
 
 export const useSearchPosts = (searchTerm: string) => { 
   return useQuery({

@@ -77,3 +77,20 @@ export type CalendarEvent = {
   end: Date;
   // Other properties specific to your calendar events
 };
+
+//get message
+export type IMessage = {
+  $id: string;
+  senderId: string;
+  receiverId: string;
+  message: string;
+  timestamp: Date; 
+}
+
+//sendmessage
+export type NewMessage = {
+  senderId: string;
+  receiverId: string;
+  message: string;
+  timestamp: Date;
+}
