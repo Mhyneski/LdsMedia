@@ -58,15 +58,24 @@ const Home = () => {
         <h3 className="h3-bold text-light-1">Top Creators</h3>
         {isUserLoading && !creators ? (
           <Loader />
-        ) : (
-          <ul className="grid 2xl:grid-cols-2 gap-6">
-            {creators?.map((creator) => (
-              <li key={creator.id} className="flex-1 min-w-[200px] w-full">
-                <UserCard user={creator} />
-              </li>
-            ))}
-          </ul>
-        )}
+          ) : (
+            <ul className="grid 2xl:grid-cols-2 gap-6">
+              {(creators as any)?.documents?.map((creator: any) => (
+                <li key={creator?.$id}>
+                  <UserCard user={creator} />
+                </li>
+              )) ||
+                (Array.isArray(creators) ? (
+                  creators.map((creator: any) => (
+                    <li key={creator?.$id}>
+                      <UserCard user={creator} />
+                    </li>
+                  ))
+                ) : (
+                  <p>Invalid data structure for users.</p>
+                ))}
+            </ul>
+          )}
       </div>
     </div>
   );

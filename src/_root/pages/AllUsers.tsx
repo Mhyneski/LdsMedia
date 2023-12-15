@@ -1,4 +1,3 @@
-// AllUsers.tsx
 import Loader from "@/components/shared/Loader";
 import UserCard from "@/components/shared/UserCard";
 import { useToast } from "@/components/ui/use-toast";
@@ -11,19 +10,29 @@ const AllUsers = () => {
 
   if (isErrorCreators) {
     toast({ title: "Something went wrong." });
-    return null; // or handle the error appropriately
+    return null; // You need to return something even if there's an error
+  }
+
+  if (!creators) {
+    // Handle the case where creators is null or undefined
+    return <p>Invalid data structure for users.</p>;
+  }
+
+  if (!('documents' in creators)) {
+    // Handle the case where creators.documents does not exist
+    return <p>Invalid data structure for users.</p>;
   }
 
   return (
     <div className="common-container">
       <div className="user-container">
         <h2 className="h3-bold md:h2-bold text-left w-full">All Users</h2>
-        {isLoading && !creators ? (
+        {isLoading ? (
           <Loader />
         ) : (
           <ul className="user-grid">
-            {creators?.map((creator) => (
-              <li key={creator.id} className="flex-1 min-w-[200px] w-full">
+            {creators.documents.map((creator: any) => (
+              <li key={creator?.$id} className="flex-1 min-w-[200px] w-full">
                 <UserCard user={creator} />
               </li>
             ))}
